@@ -8,6 +8,7 @@
 <meta property="og:title" content="Execute — Your nutrition & training coach in one app">
 <meta property="og:description" content="Photo meal tracking, AI training plans that adapt to your recovery, and a clear daily plan. All in one app.">
 <meta property="og:type" content="website">
+<link rel="icon" href="logo.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -51,7 +52,7 @@
   nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(20px); background: rgba(246,242,232,0.82); border-bottom: 1px solid rgba(232,225,212,0.7); }
   nav .row { display: flex; align-items: center; justify-content: space-between; height: 68px; }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; color: var(--ink); font-size: 19px; letter-spacing: -0.02em; }
-  .brand .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--ink); color: var(--accent); display: grid; place-items: center; font-size: 17px; font-weight: 900; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 9px; overflow: hidden; display: grid; place-items: center; mix-blend-mode: multiply; }
   nav .links { display: flex; align-items: center; gap: 28px; }
   nav .links a.navlink { color: var(--body); font-weight: 600; font-size: 14px; }
   nav .links a.navlink:hover { color: var(--ink); }
@@ -180,7 +181,7 @@
 
   <nav>
     <div class="wrap row">
-      <a class="brand" href="#top"><span class="mark">E</span>Execute</a>
+      <a class="brand" href="#top"><img class="mark" src="logo.png" alt="Execute logo" width="30" height="30">Execute</a>
       <div class="links">
         <a class="navlink" href="#features">Features</a>
         <a class="navlink" href="#how">How it works</a>
@@ -399,7 +400,7 @@
 
   <footer>
     <div class="wrap row">
-      <a class="brand" href="#top"><span class="mark">E</span>Execute</a>
+      <a class="brand" href="#top"><img class="mark" src="logo.png" alt="Execute logo" width="30" height="30">Execute</a>
       <div class="flinks">
         <a href="/privacy.html">Privacy</a>
         <a href="/terms.html">Terms</a>
