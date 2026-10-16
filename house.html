@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>The Shortlist — House Board</title>
+<meta name="description" content="A shared board for shortlisting places. Drop a link, write the gist, vote." />
+<meta name="theme-color" content="#FBF9F4" />
+<link rel="icon" href="logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper: #FBF9F4;
+    --card: #FFFFFF;
+    --ink: #1C2B25;
+    --pine: #2E5E4E;
+    --pine-soft: #E7EFEA;
+    --amber: #C77B33;
+    --amber-soft: #F6EADB;
+    --mist: #7E8E85;
+    --line: #E4E0D6;
+    --love: #2E5E4E;
+    --maybe: #C77B33;
+    --pass: #A8493B;
+    --radius: 14px;
+    --display: "Space Grotesk", system-ui, sans-serif;
+    --body: "Inter", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); }
+
+  #app {
+    font-family: var(--body);
+    color: var(--ink);
+    background: var(--paper);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  /* Header */
+  .topline {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px; margin-bottom: 24px;
+  }
+  .brand h1 {
+    font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4.5vw, 38px);
+    letter-spacing: -0.02em; margin: 0; line-height: 1.0;
+  }
+  .brand p { margin: 6px 0 0; color: var(--mist); font-size: 14px; max-width: 46ch; }
+
+  .who { text-align: right; flex-shrink: 0; }
+  .who label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mist); margin-bottom: 6px; }
+  .who-name { display: inline-flex; align-items: center; gap: 8px; }
+  .who-name strong { font-family: var(--display); font-weight: 600; font-size: 16px; }
+  .linkbtn { background: none; border: none; color: var(--pine); font-family: var(--body); font-size: 13px; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+  .linkbtn:hover { color: var(--ink); }
+
+  /* Controls row */
+  .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+  .controls .left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .controls .count { font-family: var(--mono); font-size: 13px; color: var(--mist); }
+  .sortsel {
+    font-family: var(--body); font-size: 13px; color: var(--ink); background: var(--card);
+    border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; cursor: pointer;
+  }
+  .spacer { flex: 1; }
+
+  .btn {
+    font-family: var(--display); font-weight: 600; font-size: 14px; cursor: pointer;
+    border-radius: 10px; padding: 10px 16px; border: 1px solid transparent; transition: all .12s ease;
+  }
+  .btn-primary { background: var(--pine); color: #fff; }
+  .btn-primary:hover { background: #244c40; }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--ink); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Name gate */
+  .gate {
+    background: var(--amber-soft); border: 1px solid #ecd9bf; border-radius: var(--radius);
+    padding: 16px 18px; margin-bottom: 22px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .gate p { margin: 0; font-size: 14px; flex: 1; min-width: 200px; }
+
+  /* Form */
+  .form {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px; margin-bottom: 26px; box-shadow: 0 1px 0 rgba(28,43,37,0.03);
+  }
+  .form h2 { font-family: var(--display); font-weight: 600; font-size: 17px; margin: 0 0 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--mist); }
+  .field input, .field textarea, .field select {
+    font-family: var(--body); font-size: 14px; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; width: 100%;
+  }
+  .field select { cursor: pointer; }
+  .field input:focus, .field textarea:focus, .field select:focus, .sortsel:focus, .who-input:focus {
+    outline: 2px solid var(--pine); outline-offset: 1px; border-color: var(--pine);
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .hint { font-size: 12px; color: var(--mist); }
+  .specrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .form-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+  .who-input {
+    font-family: var(--body); font-size: 14px; border: 1px solid var(--line);
+    border-radius: 9px; padding: 9px 12px; min-width: 150px;
+  }
+
+  /* Cards */
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 12px;
+    transition: border-color .12s ease, transform .12s ease;
+  }
+  .card:hover { border-color: #cfc9bb; }
+  .card .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card .title { font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: -0.01em; line-height: 1.15; margin: 0; }
+  .card .nb { font-family: var(--mono); font-size: 11px; color: var(--pine); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+  .gist { font-size: 14.5px; color: var(--ink); line-height: 1.5; }
+  .gist.empty { color: var(--mist); font-style: italic; }
+
+  .spec {
+    display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 12.5px;
+    color: var(--ink); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 10px 0;
+  }
+  .spec span b { color: var(--pine); font-weight: 600; }
+  .spec .none { color: var(--mist); font-style: normal; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-family: var(--mono); font-size: 11px; background: var(--pine-soft); color: var(--pine); padding: 3px 8px; border-radius: 20px; }
+
+  .misc { font-size: 13px; color: var(--mist); line-height: 1.45; border-left: 2px solid var(--line); padding-left: 10px; }
+
+  .meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--mist); }
+  .meta .by { font-weight: 500; }
+
+  .votes { display: flex; gap: 7px; }
+  .vote {
+    font-family: var(--body); font-size: 13px; cursor: pointer; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 20px; padding: 5px 11px; display: inline-flex;
+    align-items: center; gap: 5px; transition: all .1s ease; color: var(--ink);
+  }
+  .vote .n { font-family: var(--mono); font-weight: 600; font-size: 12px; }
+  .vote:hover { border-color: var(--ink); }
+  .vote.on-love { background: var(--pine); color: #fff; border-color: var(--pine); }
+  .vote.on-maybe { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .vote.on-pass { background: var(--pass); color: #fff; border-color: var(--pass); }
+
+  .voters { font-size: 11.5px; color: var(--mist); line-height: 1.4; min-height: 1em; }
+  .voters b { color: var(--ink); font-weight: 500; }
+
+  .card-foot { display: flex; gap: 10px; align-items: center; margin-top: 2px; }
+  .open {
+    flex: 1; text-align: center; font-family: var(--display); font-weight: 600; font-size: 13.5px;
+    text-decoration: none; color: var(--pine); border: 1px solid var(--pine); border-radius: 9px;
+    padding: 8px; transition: all .12s ease;
+  }
+  .open:hover { background: var(--pine); color: #fff; }
+  .open.dead { color: var(--mist); border-color: var(--line); pointer-events: none; }
+  .del { background: none; border: none; color: var(--mist); cursor: pointer; font-size: 12px; padding: 6px; }
+  .del:hover { color: var(--pass); }
+
+  /* States */
+  .empty-state, .loading {
+    text-align: center; padding: 60px 20px; color: var(--mist); font-size: 15px;
+    border: 1px dashed var(--line); border-radius: var(--radius);
+  }
+  .empty-state strong { display: block; font-family: var(--display); color: var(--ink); font-size: 18px; margin-bottom: 6px; }
+
+  .err { background: #f9e9e6; border: 1px solid #e3b8b0; color: #8a3a2e; padding: 12px 16px; border-radius: 10px; font-size: 13.5px; margin-bottom: 18px; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 560px) {
+    .grid2, .specrow { grid-template-columns: 1fr; }
+    .specrow { grid-template-columns: 1fr 1fr; }
+    .who { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="wrap">
+    <div class="topline">
+      <div class="brand">
+        <h1>The Shortlist</h1>
+        <p>Four of us, one board. Drop a place, write the gist, skip the re-reading.</p>
+      </div>
+      <div class="who">
+        <label>Posting as</label>
+        <div id="whoZone"></div>
+      </div>
+    </div>
+
+    <div id="errZone"></div>
+    <div id="gateZone"></div>
+
+    <div class="controls">
+      <div class="left">
+        <span class="count" id="countLabel">—</span>
+        <select class="sortsel" id="sortSel">
+          <option value="loved">Most loved</option>
+          <option value="new">Newest</option>
+          <option value="priceLow">Rent: low → high</option>
+          <option value="priceHigh">Rent: high → low</option>
+        </select>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" id="refreshBtn">Refresh</button>
+      <button class="btn btn-primary" id="addToggle">+ Add a place</button>
+    </div>
+
+    <div class="form hidden" id="form">
+      <h2>Add a place</h2>
+      <div class="field full">
+        <label>Listing link</label>
+        <input id="f_url" type="url" placeholder="https://..." />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Name / nickname</label>
+          <input id="f_title" placeholder="e.g. The one with the rooftop" />
+        </div>
+        <div class="field">
+          <label>Neighbourhood</label>
+          <input id="f_nb" placeholder="e.g. Kitsilano" />
+        </div>
+      </div>
+      <div class="field full">
+        <label>The gist — why it's worth a look</label>
+        <textarea id="f_gist" placeholder="One or two lines so nobody has to open the link to remember. e.g. 3bed corner unit, huge kitchen, but no parking."></textarea>
+      </div>
+      <div class="specrow">
+        <div class="field"><label>Rent / mo</label><input id="f_price" inputmode="numeric" placeholder="3200" /></div>
+        <div class="field"><label>Beds</label><input id="f_beds" placeholder="3" /></div>
+        <div class="field"><label>Baths</label><input id="f_baths" placeholder="2" /></div>
+        <div class="field"><label>Tags</label><input id="f_tags" placeholder="parking, pets" /></div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Gym</label>
+          <select id="f_gym">
+            <option value="">Not sure</option>
+            <option value="yes">Gym in building</option>
+            <option value="no">No gym</option>
+          </select>
+        </div>
+      </div>
+      <div class="field full">
+        <label>Miscellaneous — anything else worth noting</label>
+        <textarea id="f_misc" placeholder="e.g. landlord seems flaky, 10 min walk to skytrain, laundry is coin-op."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="saveBtn">Add to board</button>
+        <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
+      </div>
+    </div>
+
+    <div id="boardZone">
+      <div class="loading">Loading the board…</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+// --- Supabase (anon key is publishable / safe in client; this board has no login) ---
+const SUPABASE_URL = "https://shoflbdwlmvttidoolvd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNob2ZsYmR3bG12dHRpZG9vbHZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDQzMzIsImV4cCI6MjA5NTMyMDMzMn0.ZGMogX33pvi3fI07BFeIZoTTd7WAMIHTCMplDz6J9C4";
+const TABLE = "house_listings";
+const ME_KEY = "house:me:v1";
+
+const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+let listings = [];
+let me = null;
+let sortBy = "loved";
+let syncing = false;
+let syncTimer = null;
+
+const $ = (id) => document.getElementById(id);
+
+// ---------- row <-> view mapping ----------
+function fromRow(r) {
+  return {
+    id: r.id,
+    title: r.title,
+    url: r.url,
+    gist: r.gist,
+    neighbourhood: r.neighbourhood,
+    price: (r.price == null ? null : r.price),
+    beds: r.beds,
+    baths: r.baths,
+    tags: Array.isArray(r.tags) ? r.tags : [],
+    gym: r.gym || "",
+    misc: r.misc,
+    addedBy: r.added_by,
+    addedAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    votes: (r.votes && typeof r.votes === "object") ? r.votes : {},
+  };
+}
+
+// ---------- identity (per-device, localStorage) ----------
+function loadMe() {
+  try {
+    const raw = localStorage.getItem(ME_KEY);
+    me = raw ? (JSON.parse(raw).name || null) : null;
+  } catch (e) { me = null; }
+}
+function saveMe(name) {
+  me = name;
+  try { localStorage.setItem(ME_KEY, JSON.stringify({ name })); } catch (e) {}
+  renderWho(); renderGate();
+}
+
+// ---------- data ----------
+async function loadListings() {
+  try {
+    const { data, error } = await supa.from(TABLE).select("*");
+    if (error) throw error;
+    listings = (data || []).map(fromRow);
+  } catch (e) {
+    showError("Couldn't load the board. Hit Refresh in a moment.");
+  }
+}
+
+function scheduleSync() {
+  if (syncTimer) return;
+  syncTimer = setTimeout(async () => {
+    syncTimer = null;
+    if ($("saveBtn").disabled || syncing) return; // don't clobber an in-flight write
+    syncing = true;
+    await loadListings();
+    renderBoard();
+    syncing = false;
+  }, 400);
+}
+
+function showError(msg) {
+  $("errZone").innerHTML = '<div class="err">' + esc(msg) + '</div>';
+  setTimeout(() => { $("errZone").innerHTML = ""; }, 5000);
+}
+
+// ---------- utils ----------
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function num(v) { const n = parseInt(String(v).replace(/[^0-9]/g, ""), 10); return isNaN(n) ? null : n; }
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60); if (m < 60) return m + "m ago";
+  const h = Math.floor(m / 60); if (h < 24) return h + "h ago";
+  const d = Math.floor(h / 24); if (d < 7) return d + "d ago";
+  return new Date(ts).toLocaleDateString();
+}
+function countVotes(l, kind) { return Object.values(l.votes || {}).filter(v => v === kind).length; }
+function votersOf(l, kind) { return Object.entries(l.votes || {}).filter(([, v]) => v === kind).map(([n]) => n); }
+function score(l) { return countVotes(l, "love") * 2 + countVotes(l, "maybe") - countVotes(l, "pass") * 2; }
+
+// ---------- render: identity ----------
+function renderWho() {
+  const z = $("whoZone");
+  if (me) {
+    z.innerHTML = '<div class="who-name"><strong>' + esc(me) + '</strong>' +
+      '<button class="linkbtn" id="changeName">change</button></div>';
+    $("changeName").onclick = () => { renderWhoInput(); };
+  } else {
+    renderWhoInput();
+  }
+}
+function renderWhoInput() {
+  const z = $("whoZone");
+  z.innerHTML = '<input class="who-input" id="nameInput" placeholder="Your name" maxlength="20" value="' + esc(me || "") + '" />';
+  const inp = $("nameInput");
+  inp.focus();
+  const commit = () => { const v = inp.value.trim(); if (v) saveMe(v); else renderWho(); };
+  inp.onkeydown = (e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") renderWho(); };
+  inp.onblur = commit;
+}
+function renderGate() {
+  const z = $("gateZone");
+  if (me) { z.innerHTML = ""; return; }
+  z.innerHTML = '<div class="gate"><p><b>Set your name first</b> so the others know who added what and who voted. Top-right corner.</p></div>';
+}
+
+// ---------- render: board ----------
+function sortListings(arr) {
+  const a = arr.slice();
+  if (sortBy === "loved") a.sort((x, y) => score(y) - score(x) || y.addedAt - x.addedAt);
+  else if (sortBy === "new") a.sort((x, y) => y.addedAt - x.addedAt);
+  else if (sortBy === "priceLow") a.sort((x, y) => (x.price ?? 1e9) - (y.price ?? 1e9));
+  else if (sortBy === "priceHigh") a.sort((x, y) => (y.price ?? -1) - (x.price ?? -1));
+  return a;
+}
+
+function specHTML(l) {
+  const parts = [];
+  if (l.price != null) parts.push('<span><b>$' + l.price.toLocaleString() + '</b>/mo</span>');
+  if (l.beds) parts.push('<span><b>' + esc(l.beds) + '</b> bed</span>');
+  if (l.baths) parts.push('<span><b>' + esc(l.baths) + '</b> bath</span>');
+  if (l.gym === "yes") parts.push('<span><b>Gym</b></span>');
+  else if (l.gym === "no") parts.push('<span>No&nbsp;gym</span>');
+  if (!parts.length) return '<div class="spec"><span class="none">No specs added yet</span></div>';
+  return '<div class="spec">' + parts.join("") + '</div>';
+}
+
+function voteBtn(l, kind, label) {
+  const mine = me && l.votes && l.votes[me] === kind;
+  const n = countVotes(l, kind);
+  return '<button class="vote ' + (mine ? "on-" + kind : "") + '" data-id="' + l.id + '" data-kind="' + kind + '">' +
+    label + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>';
+}
+
+function votersLine(l) {
+  const bits = [];
+  const love = votersOf(l, "love"), maybe = votersOf(l, "maybe"), pass = votersOf(l, "pass");
+  if (love.length) bits.push('<b>♥</b> ' + esc(love.join(", ")));
+  if (maybe.length) bits.push('<b>?</b> ' + esc(maybe.join(", ")));
+  if (pass.length) bits.push('<b>✕</b> ' + esc(pass.join(", ")));
+  return bits.join(" &nbsp;·&nbsp; ");
+}
+
+function cardHTML(l) {
+  const tags = (l.tags || []).map(t => '<span class="tag">' + esc(t) + '</span>').join("");
+  const validUrl = l.url && /^https?:\/\//i.test(l.url);
+  const open = validUrl
+    ? '<a class="open" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">Open listing ↗</a>'
+    : '<span class="open dead">No link</span>';
+  const delBtn = (me && l.addedBy === me) ? '<button class="del" data-del="' + l.id + '">delete</button>' : '';
+  return '<div class="card">' +
+    '<div class="head"><div>' +
+      '<h3 class="title">' + esc(l.title || "Untitled place") + '</h3>' +
+      (l.neighbourhood ? '<div class="nb">' + esc(l.neighbourhood) + '</div>' : '') +
+    '</div></div>' +
+    '<div class="gist' + (l.gist ? '' : ' empty') + '">' + (l.gist ? esc(l.gist) : "No gist yet — add why it's worth a look.") + '</div>' +
+    specHTML(l) +
+    (tags ? '<div class="tags">' + tags + '</div>' : '') +
+    (l.misc ? '<div class="misc">' + esc(l.misc) + '</div>' : '') +
+    '<div class="votes">' +
+      voteBtn(l, "love", "♥ Love") + voteBtn(l, "maybe", "? Maybe") + voteBtn(l, "pass", "✕ Pass") +
+    '</div>' +
+    '<div class="voters">' + votersLine(l) + '</div>' +
+    '<div class="meta"><span class="by">added by ' + esc(l.addedBy || "someone") + '</span><span>' + timeAgo(l.addedAt) + '</span></div>' +
+    '<div class="card-foot">' + open + delBtn + '</div>' +
+  '</div>';
+}
+
+function renderBoard() {
+  const z = $("boardZone");
+  $("countLabel").textContent = listings.length + (listings.length === 1 ? " place" : " places");
+  if (!listings.length) {
+    z.innerHTML = '<div class="empty-state"><strong>No places yet</strong>' +
+      'Paste the first link to get the board going. Add the gist so the others remember it at a glance.</div>';
+    return;
+  }
+  z.innerHTML = '<div class="board">' + sortListings(listings).map(cardHTML).join("") + '</div>';
+  z.querySelectorAll(".vote").forEach(b => b.onclick = () => onVote(b.dataset.id, b.dataset.kind));
+  z.querySelectorAll(".del").forEach(b => b.onclick = () => onDelete(b.dataset.del));
+}
+
+// ---------- actions ----------
+async function onVote(id, kind) {
+  if (!me) { showError("Set your name first (top-right) so your vote is yours."); return; }
+  const local = listings.find(x => x.id === id);
+  if (!local) { scheduleSync(); return; }
+
+  // optimistic: toggle my vote in-memory and repaint immediately
+  const optimistic = Object.assign({}, local.votes || {});
+  if (optimistic[me] === kind) delete optimistic[me]; else optimistic[me] = kind;
+  local.votes = optimistic;
+  renderBoard();
+
+  // authoritative: re-read the row's votes, apply only MY key, write back
+  try {
+    const { data: row, error: rerr } = await supa.from(TABLE).select("votes").eq("id", id).maybeSingle();
+    if (rerr) throw rerr;
+    const latest = (row && row.votes && typeof row.votes === "object") ? row.votes : {};
+    if (latest[me] === kind) delete latest[me]; else latest[me] = kind;
+    const { data: upd, error: uerr } = await supa.from(TABLE).update({ votes: latest }).eq("id", id).select("votes").maybeSingle();
+    if (uerr) throw uerr;
+    if (local) local.votes = (upd && upd.votes) || latest;
+    renderBoard();
+  } catch (e) {
+    showError("Vote didn't save — refreshing.");
+    await loadListings(); renderBoard();
+  }
+}
+
+async function onDelete(id) {
+  const l = listings.find(x => x.id === id);
+  if (!l) return;
+  if (!confirm('Remove "' + (l.title || "this place") + '" from the board for everyone?')) return;
+
+  // optimistic remove
+  listings = listings.filter(x => x.id !== id);
+  renderBoard();
+
+  const { error } = await supa.from(TABLE).delete().eq("id", id);
+  if (error) {
+    showError("Couldn't delete — refreshing.");
+    await loadListings(); renderBoard();
+  }
+}
+
+async function onSave() {
+  if (!me) { showError("Set your name first (top-right)."); return; }
+  const title = $("f_title").value.trim();
+  const url = $("f_url").value.trim();
+  const gist = $("f_gist").value.trim();
+  if (!title && !url) { showError("Add at least a name or a link."); return; }
+
+  const payload = {
+    title: title || "Untitled place",
+    url: url || null,
+    gist: gist || null,
+    neighbourhood: $("f_nb").value.trim() || null,
+    price: num($("f_price").value),
+    beds: $("f_beds").value.trim() || null,
+    baths: $("f_baths").value.trim() || null,
+    tags: $("f_tags").value.split(",").map(t => t.trim()).filter(Boolean).slice(0, 6),
+    gym: $("f_gym").value || null,
+    misc: $("f_misc").value.trim() || null,
+    added_by: me,
+    votes: {},
+  };
+
+  $("saveBtn").disabled = true;
+  try {
+    const { data, error } = await supa.from(TABLE).insert(payload).select();
+    if (error) throw error;
+    if (data && data[0]) listings.push(fromRow(data[0]));
+    clearForm();
+    toggleForm(false);
+    renderBoard();
+  } catch (e) {
+    showError("Couldn't add — check your connection and try again.");
+  } finally {
+    $("saveBtn").disabled = false;
+  }
+}
+
+function clearForm() {
+  ["f_url","f_title","f_nb","f_gist","f_price","f_beds","f_baths","f_tags","f_misc"].forEach(id => $(id).value = "");
+  $("f_gym").value = "";
+}
+function toggleForm(show) {
+  const f = $("form");
+  const on = show == null ? f.classList.contains("hidden") : show;
+  f.classList.toggle("hidden", !on);
+  $("addToggle").textContent = on ? "Close" : "+ Add a place";
+  if (on) $("f_url").focus();
+}
+
+async function refresh() {
+  await loadListings();
+  renderBoard();
+}
+
+// ---------- realtime ----------
+function subscribeRealtime() {
+  try {
+    supa.channel("house-board")
+      .on("postgres_changes", { event: "*", schema: "public", table: TABLE }, () => scheduleSync())
+      .subscribe();
+  } catch (e) { /* live sync is best-effort; the poll below is the fallback */ }
+}
+
+// ---------- wire up ----------
+async function init() {
+  $("addToggle").onclick = () => toggleForm();
+  $("cancelBtn").onclick = () => { clearForm(); toggleForm(false); };
+  $("saveBtn").onclick = onSave;
+  $("refreshBtn").onclick = refresh;
+  $("sortSel").onchange = (e) => { sortBy = e.target.value; renderBoard(); };
+
+  loadMe();
+  renderWho(); renderGate();
+  await loadListings();
+  renderBoard();
+
+  subscribeRealtime();
+
+  // fallback poll so everyone stays in sync if the realtime socket drops
+  setInterval(async () => {
+    if ($("saveBtn").disabled || syncing) return; // don't clobber an in-flight write
+    syncing = true;
+    await loadListings();
+    renderBoard();
+    syncing = false;
+  }, 30000);
+}
+
+init();
+</script>
+
+</body>
+</html>
